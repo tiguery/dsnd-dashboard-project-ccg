@@ -1,19 +1,13 @@
-import pickle
+# report/utils.py
+from __future__ import annotations
 from pathlib import Path
+import pickle
+from typing import Any
 
-# Using the Path object, create a `project_root` variable
-# set to the absolute path for the root of this project directory
-#### YOUR CODE HERE
- 
-# Using the `project_root` variable
-# create a `model_path` variable
-# that points to the file `model.pkl`
-# inside the assets directory
-#### YOUR CODE HERE
+# Project root and model path
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+MODEL_PATH = PROJECT_ROOT / "assets" / "model.pkl"
 
-def load_model():
-
-    with model_path.open('rb') as file:
-        model = pickle.load(file)
-
-    return model
+def load_model(path: Path = MODEL_PATH) -> Any:
+    with open(path, "rb") as f:
+        return pickle.load(f)

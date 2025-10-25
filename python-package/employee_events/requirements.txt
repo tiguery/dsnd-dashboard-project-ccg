@@ -1,1 +1,7 @@
-pandas==2.2.3
+fasthtml==0.4.4
+uvicorn>=0.28
+matplotlib>=3.8
+pandas>=2.0
+scikit-learn>=1.3
+pytest>=7.4
+sqlite-minutils

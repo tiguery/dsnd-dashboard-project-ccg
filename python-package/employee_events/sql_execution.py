@@ -1,46 +1,39 @@
-from sqlite3 import connect
+# python-package/employee_events/sql_execution.py
+from __future__ import annotations
+import sqlite3
 from pathlib import Path
-from functools import wraps
-import pandas as pd
+from typing import Any, Iterable, Optional, Sequence, Union, Dict, List
 
-# Using pathlib, create a `db_path` variable
-# that points to the absolute path for the `employee_events.db` file
-#### YOUR CODE HERE
+RowMapping = Dict[str, Any]
 
-
-# OPTION 1: MIXIN
-# Define a class called `QueryMixin`
-class QueryMixin:
-    
-    # Define a method named `pandas_query`
-    # that receives an sql query as a string
-    # and returns the query's result
-    # as a pandas dataframe
-    #### YOUR CODE HERE
-
-    # Define a method named `query`
-    # that receives an sql_query as a string
-    # and returns the query's result as
-    # a list of tuples. (You will need
-    # to use an sqlite3 cursor)
-    #### YOUR CODE HERE
-    
-
- 
- # Leave this code unchanged
-def query(func):
+class SqlExecutorMixin:
     """
-    Decorator that runs a standard sql execution
-    and returns a list of tuples
+    Mixin to handle open/execute/close for SQLite queries.
+    Usage:
+        class MyQueries(SqlExecutorMixin): ...
+        rows = self.execute("SELECT * FROM employee WHERE employee_id=?", (emp_id,))
     """
 
-    @wraps(func)
-    def run_query(*args, **kwargs):
-        query_string = func(*args, **kwargs)
-        connection = connect(db_path)
-        cursor = connection.cursor()
-        result = cursor.execute(query_string).fetchall()
-        connection.close()
-        return result
-    
-    return run_query
+    def get_db_path(self) -> Path:
+        # DB lives alongside this file in the package directory
+        here = Path(__file__).resolve().parent
+        return here / "employee_events.db"
+
+    def _connect(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self.get_db_path())
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def execute(
+        self,
+        sql: str,
+        params: Optional[Sequence[Any]] = None
+    ) -> List[RowMapping]:
+        params = params or ()
+        conn = self._connect()
+        try:
+            cur = conn.execute(sql, params)
+            rows = [dict(r) for r in cur.fetchall()]
+            return rows
+        finally:
+            conn.close()
